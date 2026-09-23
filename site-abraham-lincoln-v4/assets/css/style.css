@@ -579,3 +579,35 @@ body.survey-open{overflow:hidden}
   .survey-actions{display:grid;grid-template-columns:1fr}
   .survey-submit,.survey-later{width:100%}
 }
+
+
+/* v7 — convite visual para pesquisa */
+.survey-nudge{
+  position:fixed;right:20px;bottom:82px;z-index:1049;
+  width:min(330px,calc(100% - 28px));padding:16px 48px 16px 16px;
+  border:1px solid #cfe0f4;border-radius:18px;background:#fff;
+  box-shadow:0 18px 48px rgba(6,37,83,.22);
+  opacity:0;transform:translateY(12px) scale(.98);pointer-events:none;
+  transition:opacity .25s ease,transform .25s ease
+}
+.survey-nudge.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.survey-nudge strong{display:block;color:var(--blue-950);font-size:1rem;margin-bottom:3px}
+.survey-nudge span{display:block;color:var(--muted);font-size:.86rem;line-height:1.4;margin-bottom:11px}
+.survey-nudge-action{
+  border:0;border-radius:10px;background:var(--blue-800);color:#fff;
+  padding:9px 12px;font-weight:850;font-size:.84rem
+}
+.survey-nudge-close{
+  position:absolute;right:10px;top:10px;width:30px;height:30px;border:0;border-radius:50%;
+  background:var(--blue-050);color:var(--blue-950);font-size:1rem
+}
+.survey-attention{
+  animation:surveyPulse 1.9s ease-in-out infinite;
+}
+@keyframes surveyPulse{
+  0%,100%{box-shadow:0 14px 34px rgba(6,37,83,.28)}
+  50%{box-shadow:0 14px 34px rgba(6,37,83,.28),0 0 0 10px rgba(19,120,232,.12)}
+}
+@media(max-width:700px){
+  .survey-nudge{right:14px;bottom:76px}
+}
