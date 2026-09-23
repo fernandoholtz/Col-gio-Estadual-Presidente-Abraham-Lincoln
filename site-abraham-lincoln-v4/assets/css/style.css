@@ -496,3 +496,86 @@ html{scroll-padding-top:88px}
   .management-badge{width:56px;height:56px;border-radius:16px}
   .management-card h3{font-size:1.05rem}
 }
+
+
+/* v6 — pesquisa e dúvidas */
+.survey-fab{
+  position:fixed;right:20px;bottom:20px;z-index:1050;
+  display:flex;align-items:center;gap:9px;
+  border:0;border-radius:999px;padding:12px 16px;
+  background:var(--blue-900);color:#fff;font-weight:850;
+  box-shadow:0 14px 34px rgba(6,37,83,.28);
+  transition:transform .18s ease,box-shadow .18s ease
+}
+.survey-fab:hover,.survey-fab:focus-visible{transform:translateY(-2px);box-shadow:0 18px 40px rgba(6,37,83,.34)}
+.survey-fab-icon{
+  width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
+  background:#fff;color:var(--blue-900);font-weight:950
+}
+.survey-modal{display:none;position:fixed;inset:0;z-index:1400}
+.survey-modal.open{display:block}
+.survey-backdrop{position:absolute;inset:0;background:rgba(2,18,43,.68);backdrop-filter:blur(4px)}
+.survey-dialog{
+  position:relative;z-index:1;width:min(680px,calc(100% - 28px));max-height:calc(100vh - 36px);
+  overflow:auto;margin:18px auto;background:#fff;border-radius:24px;
+  box-shadow:0 24px 70px rgba(0,0,0,.28);padding:30px
+}
+.survey-close{
+  position:absolute;right:18px;top:16px;width:38px;height:38px;border:0;border-radius:50%;
+  background:var(--blue-050);color:var(--blue-950);font-size:1.35rem;line-height:1
+}
+.survey-intro{padding-right:40px;margin-bottom:22px}
+.survey-kicker{
+  color:var(--blue-700);font-size:.72rem;font-weight:900;letter-spacing:.13em;text-transform:uppercase
+}
+.survey-intro h2{color:var(--blue-950);font-size:clamp(1.55rem,4vw,2.1rem);line-height:1.1;margin:5px 0 9px}
+.survey-intro p{margin:0;color:var(--muted)}
+.survey-form{display:grid;gap:17px}
+.survey-form>label{display:grid;gap:7px;color:var(--blue-950);font-weight:750}
+.survey-form select,.survey-form textarea{
+  width:100%;border:1px solid #cad8e9;border-radius:12px;background:#fff;color:var(--ink);
+  padding:11px 12px;outline:none;transition:border-color .18s ease,box-shadow .18s ease
+}
+.survey-form select:focus,.survey-form textarea:focus{
+  border-color:var(--blue-600);box-shadow:0 0 0 3px rgba(19,120,232,.12)
+}
+.survey-form textarea{resize:vertical;min-height:82px}
+.survey-rating{border:0;padding:0;margin:0;display:grid;gap:8px}
+.survey-rating legend{padding:0;color:var(--blue-950);font-weight:750}
+.survey-rating-options{display:flex;gap:9px;flex-wrap:wrap}
+.survey-rating-options label{cursor:pointer}
+.survey-rating-options input{position:absolute;opacity:0;pointer-events:none}
+.survey-rating-options span{
+  width:44px;height:44px;border-radius:12px;border:1px solid #cad8e9;
+  display:grid;place-items:center;font-weight:850;color:var(--blue-900);background:#fff
+}
+.survey-rating-options input:checked+span{
+  background:var(--blue-800);color:#fff;border-color:var(--blue-800)
+}
+.survey-rating small{color:var(--muted)}
+.survey-privacy{
+  padding:12px 14px;border-radius:12px;background:var(--blue-050);
+  color:#5a6b84;font-size:.8rem;border:1px solid var(--line)
+}
+.survey-status{min-height:0;font-size:.88rem;font-weight:750}
+.survey-status.success{color:#177b58}
+.survey-status.error{color:#a93434}
+.survey-status.warning{color:#8a6415}
+.survey-actions{display:flex;gap:10px;flex-wrap:wrap}
+.survey-submit,.survey-later{
+  border-radius:12px;padding:11px 16px;font-weight:850;border:1px solid transparent
+}
+.survey-submit{background:var(--blue-900);color:#fff}
+.survey-submit:disabled{opacity:.6;cursor:wait}
+.survey-later{background:#fff;border-color:var(--line);color:#53617b}
+body.survey-open{overflow:hidden}
+
+@media(max-width:700px){
+  .survey-fab{right:14px;bottom:14px;padding:11px 13px}
+  .survey-fab span:last-child{font-size:.86rem}
+  .survey-dialog{padding:24px 18px 20px;border-radius:20px;margin:10px auto;max-height:calc(100vh - 20px)}
+  .survey-close{right:12px;top:12px}
+  .survey-intro{padding-right:34px}
+  .survey-actions{display:grid;grid-template-columns:1fr}
+  .survey-submit,.survey-later{width:100%}
+}
