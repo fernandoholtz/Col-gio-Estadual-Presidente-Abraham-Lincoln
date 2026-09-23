@@ -22,6 +22,8 @@ function doPost(e) {
         new Date(),
         safe_(data.visitor_id),
         safe_(data.perfil),
+        safe_(data.conhecia_escola),
+        safe_(data.conhecia_curso),
         safe_(data.origem_acesso),
         safe_(data.encontrou),
         safe_(data.interesse),
