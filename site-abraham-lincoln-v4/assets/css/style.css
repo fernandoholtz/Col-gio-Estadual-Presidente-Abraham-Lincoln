@@ -628,3 +628,22 @@ body.survey-open{overflow:hidden}
   0%,100%{box-shadow:0 20px 52px rgba(6,37,83,.24)}
   50%{box-shadow:0 20px 52px rgba(6,37,83,.24),0 0 0 6px rgba(19,120,232,.10)}
 }
+
+
+/* v9 — reforço periódico de atenção da pesquisa */
+.survey-alert-burst{
+  animation:surveyAttentionBurst .8s ease-in-out 4 !important;
+}
+@keyframes surveyAttentionBurst{
+  0%,100%{
+    transform:translateY(0) scale(1);
+    filter:brightness(1);
+  }
+  50%{
+    transform:translateY(-2px) scale(1.035);
+    filter:brightness(1.08);
+  }
+}
+.survey-nudge.survey-alert-burst{
+  border-color:var(--blue-600);
+}
