@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const shell = document.createElement("div");
   shell.innerHTML = `
-    <aside class="survey-nudge" data-survey-nudge aria-label="Convite para pesquisa">
+    <aside class="survey-nudge show" data-survey-nudge aria-label="Convite para pesquisa">
       <strong>Você conhece nossa escola?</strong>
       <span>Conte pra gente em uma pesquisa rápida. Leva menos de 1 minuto.</span>
       <div class="survey-nudge-actions">
@@ -313,13 +313,11 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("survey-open");
 
-    // Se apenas fechou a janela, o convite volta a aparecer depois.
+    // Se apenas fechou a janela, o convite volta imediatamente.
     window.clearTimeout(nudgeTimer);
-    nudgeTimer = window.setTimeout(() => {
-      nudge?.classList.add("show");
-      fab?.classList.add("survey-attention");
-      triggerAttentionBurst();
-    }, 5000);
+    nudge?.classList.add("show");
+    fab?.classList.add("survey-attention");
+    triggerAttentionBurst();
   }
 
   function declineSurvey() {
@@ -338,31 +336,26 @@ document.addEventListener("DOMContentLoaded", () => {
   closeButtons.forEach(btn => btn.addEventListener("click", closeSurvey));
   declineButtons.forEach(btn => btn.addEventListener("click", declineSurvey));
 
-  // Mantém o convite visível durante toda a navegação até a pessoa
-  // responder ou escolher explicitamente não participar.
-  nudgeTimer = window.setTimeout(() => {
-    nudge?.classList.add("show");
-    fab?.classList.add("survey-attention");
-    triggerAttentionBurst();
-  }, 2500);
+  // Mantém o convite visível desde o carregamento e durante toda a navegação,
+  // até a pessoa responder ou escolher explicitamente não participar.
+  nudge?.classList.add("show");
+  fab?.classList.add("survey-attention");
+  triggerAttentionBurst();
 
   // Reforça visualmente o convite em intervalos regulares.
   attentionInterval = window.setInterval(() => {
     triggerAttentionBurst();
-  }, 15000);
+  }, 12000);
 
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && modal?.classList.contains("open")) closeSurvey();
   });
 
-  if (SURVEY_ENDPOINT) {
-    window.setTimeout(() => {
-      if (!modal?.classList.contains("open")) {
-        nudge?.classList.add("show");
-        fab?.classList.add("survey-attention");
-      }
-    }, AUTO_OPEN_DELAY);
-  }
+  window.setTimeout(() => {
+    if (!modal?.classList.contains("open")) {
+      triggerAttentionBurst();
+    }
+  }, AUTO_OPEN_DELAY);
 
   form?.addEventListener("submit", async event => {
     event.preventDefault();
