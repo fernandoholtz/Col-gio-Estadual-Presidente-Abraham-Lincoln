@@ -87,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const SESSION_KEY = "abraham_session_id_v1";
   const RESPONDED_KEY = "abraham_survey_responded_v1";
   const DISMISSED_KEY = "abraham_survey_dismissed_v1";
-  const NUDGE_SEEN_KEY = "abraham_survey_nudge_seen_v1";
 
   const uid = () => {
     if (window.crypto?.randomUUID) return window.crypto.randomUUID();
@@ -105,7 +104,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const visitorId = getStoredId(localStorage, VISITOR_KEY);
   const sessionId = getStoredId(sessionStorage, SESSION_KEY);
+  const alreadyResponded = localStorage.getItem(RESPONDED_KEY) === "1";
+  const alreadyDeclined = localStorage.getItem(DISMISSED_KEY) === "1";
   const deviceType = () => window.innerWidth <= 700 ? "celular" : (window.innerWidth <= 1024 ? "tablet" : "computador");
+
+  if (alreadyResponded || alreadyDeclined) return;
 
   async function sendSurveyData(data) {
     if (!SURVEY_ENDPOINT) return false;
@@ -141,10 +144,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const shell = document.createElement("div");
   shell.innerHTML = `
     <aside class="survey-nudge" data-survey-nudge aria-label="Convite para pesquisa">
-      <button class="survey-nudge-close" type="button" data-survey-nudge-close aria-label="Fechar convite">×</button>
       <strong>Você conhece nossa escola?</strong>
       <span>Conte pra gente em uma pesquisa rápida. Leva menos de 1 minuto.</span>
-      <button class="survey-nudge-action" type="button" data-survey-open>Responder pesquisa</button>
+      <div class="survey-nudge-actions">
+        <button class="survey-nudge-action" type="button" data-survey-open>Responder pesquisa</button>
+        <button class="survey-nudge-decline" type="button" data-survey-decline>Não quero responder</button>
+      </div>
     </aside>
 
     <button class="survey-fab survey-attention" type="button" data-survey-open aria-label="Abrir pesquisa e dúvidas">
@@ -258,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           <div class="survey-actions">
             <button class="survey-submit" type="submit">Enviar resposta</button>
-            <button class="survey-later" type="button" data-survey-close>Agora não</button>
+            <button class="survey-later" type="button" data-survey-decline>Não quero responder</button>
           </div>
         </form>
       </section>
@@ -273,17 +278,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("[data-survey-form]");
   const status = document.querySelector("[data-survey-status]");
   const nudge = document.querySelector("[data-survey-nudge]");
-  const nudgeClose = document.querySelector("[data-survey-nudge-close]");
+  const declineButtons = document.querySelectorAll("[data-survey-decline]");
   const fab = document.querySelector(".survey-fab");
+  let nudgeTimer;
 
   function openSurvey() {
     if (!modal) return;
+    window.clearTimeout(nudgeTimer);
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("survey-open");
     nudge?.classList.remove("show");
     fab?.classList.remove("survey-attention");
-    sessionStorage.setItem(NUDGE_SEEN_KEY, "1");
     if (SURVEY_ENDPOINT) sendSurveyData(basePayload("pesquisa_aberta"));
   }
 
@@ -292,30 +298,48 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.classList.remove("open");
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("survey-open");
-    sessionStorage.setItem(DISMISSED_KEY, "1");
+
+    // Se apenas fechou a janela, o convite volta a aparecer depois.
+    window.clearTimeout(nudgeTimer);
+    nudgeTimer = window.setTimeout(() => {
+      nudge?.classList.add("show");
+      fab?.classList.add("survey-attention");
+    }, 8000);
+  }
+
+  function declineSurvey() {
+    localStorage.setItem(DISMISSED_KEY, "1");
+    window.clearTimeout(nudgeTimer);
+    modal?.classList.remove("open");
+    modal?.setAttribute("aria-hidden", "true");
+    nudge?.classList.remove("show");
+    fab?.remove();
+    nudge?.remove();
+    document.body.classList.remove("survey-open");
   }
 
   openButtons.forEach(btn => btn.addEventListener("click", openSurvey));
   closeButtons.forEach(btn => btn.addEventListener("click", closeSurvey));
+  declineButtons.forEach(btn => btn.addEventListener("click", declineSurvey));
 
-  nudgeClose?.addEventListener("click", () => {
-    nudge?.classList.remove("show");
-    sessionStorage.setItem(NUDGE_SEEN_KEY, "1");
-  });
-
-  if (!localStorage.getItem(RESPONDED_KEY) && !sessionStorage.getItem(NUDGE_SEEN_KEY)) {
-    window.setTimeout(() => {
-      nudge?.classList.add("show");
-      fab?.classList.add("survey-attention");
-    }, 5000);
-  }
+  // Mantém o convite chamando atenção durante a navegação até a pessoa
+  // responder ou escolher explicitamente não participar.
+  nudgeTimer = window.setTimeout(() => {
+    nudge?.classList.add("show");
+    fab?.classList.add("survey-attention");
+  }, 3500);
 
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && modal?.classList.contains("open")) closeSurvey();
   });
 
-  if (SURVEY_ENDPOINT && !localStorage.getItem(RESPONDED_KEY) && !sessionStorage.getItem(DISMISSED_KEY)) {
-    window.setTimeout(openSurvey, AUTO_OPEN_DELAY);
+  if (SURVEY_ENDPOINT) {
+    window.setTimeout(() => {
+      if (!modal?.classList.contains("open")) {
+        nudge?.classList.add("show");
+        fab?.classList.add("survey-attention");
+      }
+    }, AUTO_OPEN_DELAY);
   }
 
   form?.addEventListener("submit", async event => {
@@ -354,7 +378,14 @@ document.addEventListener("DOMContentLoaded", () => {
       status.textContent = "Obrigado! Sua resposta foi registrada.";
       status.className = "survey-status success";
       form.reset();
-      window.setTimeout(closeSurvey, 1400);
+      window.clearTimeout(nudgeTimer);
+      nudge?.remove();
+      fab?.remove();
+      window.setTimeout(() => {
+        modal?.classList.remove("open");
+        modal?.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("survey-open");
+      }, 1400);
     } else {
       status.textContent = "Não foi possível enviar agora. Tente novamente em instantes.";
       status.className = "survey-status error";
