@@ -87,6 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const SESSION_KEY = "abraham_session_id_v1";
   const RESPONDED_KEY = "abraham_survey_responded_v1";
   const DISMISSED_KEY = "abraham_survey_dismissed_v1";
+  const NUDGE_SEEN_KEY = "abraham_survey_nudge_seen_v1";
 
   const uid = () => {
     if (window.crypto?.randomUUID) return window.crypto.randomUUID();
@@ -139,7 +140,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const shell = document.createElement("div");
   shell.innerHTML = `
-    <button class="survey-fab" type="button" data-survey-open aria-label="Abrir pesquisa e dúvidas">
+    <aside class="survey-nudge" data-survey-nudge aria-label="Convite para pesquisa">
+      <button class="survey-nudge-close" type="button" data-survey-nudge-close aria-label="Fechar convite">×</button>
+      <strong>Você conhece nossa escola?</strong>
+      <span>Conte pra gente em uma pesquisa rápida. Leva menos de 1 minuto.</span>
+      <button class="survey-nudge-action" type="button" data-survey-open>Responder pesquisa</button>
+    </aside>
+
+    <button class="survey-fab survey-attention" type="button" data-survey-open aria-label="Abrir pesquisa e dúvidas">
       <span class="survey-fab-icon" aria-hidden="true">?</span>
       <span>Pesquisa e dúvidas</span>
     </button>
@@ -169,7 +177,27 @@ document.addEventListener("DOMContentLoaded", () => {
           </label>
 
           <label>
-            <span>2. Como você chegou até este site?</span>
+            <span>2. Antes de acessar este site, você já conhecia o Colégio Estadual Presidente Abraham Lincoln?</span>
+            <select name="conhecia_escola" required>
+              <option value="">Selecione</option>
+              <option>Sim, já conhecia</option>
+              <option>Já tinha ouvido falar</option>
+              <option>Não conhecia</option>
+            </select>
+          </label>
+
+          <label>
+            <span>3. Antes de acessar este site, você já conhecia o Curso Técnico em Desenvolvimento de Sistemas da escola?</span>
+            <select name="conhecia_curso" required>
+              <option value="">Selecione</option>
+              <option>Sim, já conhecia</option>
+              <option>Já tinha ouvido falar</option>
+              <option>Não conhecia</option>
+            </select>
+          </label>
+
+          <label>
+            <span>4. Como você chegou até este site?</span>
             <select name="origem_acesso" required>
               <option value="">Selecione</option>
               <option>QR Code</option>
@@ -182,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </label>
 
           <label>
-            <span>3. Você encontrou as informações que procurava?</span>
+            <span>5. Você encontrou as informações que procurava?</span>
             <select name="encontrou" required>
               <option value="">Selecione</option>
               <option>Sim</option>
@@ -192,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </label>
 
           <label>
-            <span>4. Qual área mais chamou sua atenção?</span>
+            <span>6. Qual área mais chamou sua atenção?</span>
             <select name="interesse" required>
               <option value="">Selecione</option>
               <option>História da escola</option>
@@ -205,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </label>
 
           <fieldset class="survey-rating">
-            <legend>5. Como você avalia o site?</legend>
+            <legend>7. Como você avalia o site?</legend>
             <div class="survey-rating-options" aria-label="Nota do site">
               ${[1,2,3,4,5].map(n => `<label><input type="radio" name="nota" value="${n}" required><span>${n}</span></label>`).join("")}
             </div>
@@ -213,7 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </fieldset>
 
           <label>
-            <span>6. O que poderíamos melhorar?</span>
+            <span>8. O que poderíamos melhorar?</span>
             <textarea name="melhoria" rows="3" maxlength="500" placeholder="Opcional"></textarea>
           </label>
 
@@ -244,12 +272,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeButtons = document.querySelectorAll("[data-survey-close]");
   const form = document.querySelector("[data-survey-form]");
   const status = document.querySelector("[data-survey-status]");
+  const nudge = document.querySelector("[data-survey-nudge]");
+  const nudgeClose = document.querySelector("[data-survey-nudge-close]");
+  const fab = document.querySelector(".survey-fab");
 
   function openSurvey() {
     if (!modal) return;
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("survey-open");
+    nudge?.classList.remove("show");
+    fab?.classList.remove("survey-attention");
+    sessionStorage.setItem(NUDGE_SEEN_KEY, "1");
     if (SURVEY_ENDPOINT) sendSurveyData(basePayload("pesquisa_aberta"));
   }
 
@@ -263,6 +297,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   openButtons.forEach(btn => btn.addEventListener("click", openSurvey));
   closeButtons.forEach(btn => btn.addEventListener("click", closeSurvey));
+
+  nudgeClose?.addEventListener("click", () => {
+    nudge?.classList.remove("show");
+    sessionStorage.setItem(NUDGE_SEEN_KEY, "1");
+  });
+
+  if (!localStorage.getItem(RESPONDED_KEY) && !sessionStorage.getItem(NUDGE_SEEN_KEY)) {
+    window.setTimeout(() => {
+      nudge?.classList.add("show");
+      fab?.classList.add("survey-attention");
+    }, 5000);
+  }
 
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && modal?.classList.contains("open")) closeSurvey();
@@ -286,6 +332,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const payload = {
       ...basePayload("resposta"),
       perfil: data.get("perfil"),
+      conhecia_escola: data.get("conhecia_escola"),
+      conhecia_curso: data.get("conhecia_curso"),
       origem_acesso: data.get("origem_acesso"),
       encontrou: data.get("encontrou"),
       interesse: data.get("interesse"),
