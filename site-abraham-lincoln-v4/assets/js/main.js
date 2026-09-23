@@ -281,6 +281,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const declineButtons = document.querySelectorAll("[data-survey-decline]");
   const fab = document.querySelector(".survey-fab");
   let nudgeTimer;
+  let attentionInterval;
+
+  function triggerAttentionBurst() {
+    if (!nudge || !fab) return;
+    if (modal?.classList.contains("open")) return;
+
+    nudge.classList.add("show", "survey-alert-burst");
+    fab.classList.add("survey-attention", "survey-alert-burst");
+
+    window.setTimeout(() => {
+      nudge.classList.remove("survey-alert-burst");
+      fab.classList.remove("survey-alert-burst");
+    }, 3200);
+  }
 
   function openSurvey() {
     if (!modal) return;
@@ -304,12 +318,14 @@ document.addEventListener("DOMContentLoaded", () => {
     nudgeTimer = window.setTimeout(() => {
       nudge?.classList.add("show");
       fab?.classList.add("survey-attention");
-    }, 8000);
+      triggerAttentionBurst();
+    }, 5000);
   }
 
   function declineSurvey() {
     localStorage.setItem(DISMISSED_KEY, "1");
     window.clearTimeout(nudgeTimer);
+    window.clearInterval(attentionInterval);
     modal?.classList.remove("open");
     modal?.setAttribute("aria-hidden", "true");
     nudge?.classList.remove("show");
@@ -322,12 +338,18 @@ document.addEventListener("DOMContentLoaded", () => {
   closeButtons.forEach(btn => btn.addEventListener("click", closeSurvey));
   declineButtons.forEach(btn => btn.addEventListener("click", declineSurvey));
 
-  // Mantém o convite chamando atenção durante a navegação até a pessoa
+  // Mantém o convite visível durante toda a navegação até a pessoa
   // responder ou escolher explicitamente não participar.
   nudgeTimer = window.setTimeout(() => {
     nudge?.classList.add("show");
     fab?.classList.add("survey-attention");
-  }, 3500);
+    triggerAttentionBurst();
+  }, 2500);
+
+  // Reforça visualmente o convite em intervalos regulares.
+  attentionInterval = window.setInterval(() => {
+    triggerAttentionBurst();
+  }, 15000);
 
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && modal?.classList.contains("open")) closeSurvey();
@@ -379,6 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
       status.className = "survey-status success";
       form.reset();
       window.clearTimeout(nudgeTimer);
+      window.clearInterval(attentionInterval);
       nudge?.remove();
       fab?.remove();
       window.setTimeout(() => {
