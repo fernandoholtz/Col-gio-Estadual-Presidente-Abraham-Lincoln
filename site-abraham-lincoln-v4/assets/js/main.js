@@ -111,10 +111,18 @@ document.addEventListener("DOMContentLoaded", () => {
   async function sendSurveyData(data) {
     if (!SURVEY_ENDPOINT) return false;
     try {
+      const body = new URLSearchParams();
+      Object.entries(data).forEach(([key, value]) => {
+        body.append(key, value ?? "");
+      });
+
       await fetch(SURVEY_ENDPOINT, {
         method: "POST",
         mode: "no-cors",
-        body: JSON.stringify(data)
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+        },
+        body
       });
       return true;
     } catch (error) {
