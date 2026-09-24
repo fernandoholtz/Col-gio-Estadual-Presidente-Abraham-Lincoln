@@ -110,20 +110,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function sendSurveyData(data) {
     if (!SURVEY_ENDPOINT) return false;
+
     try {
-      const body = new URLSearchParams();
+      // Envio por formulário oculto: mais confiável com Google Apps Script
+      // em páginas hospedadas no GitHub Pages, pois não depende de CORS/fetch.
+      const frameName = "survey_sink_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+      const iframe = document.createElement("iframe");
+      iframe.name = frameName;
+      iframe.setAttribute("aria-hidden", "true");
+      iframe.tabIndex = -1;
+      iframe.style.display = "none";
+
+      const postForm = document.createElement("form");
+      postForm.method = "POST";
+      postForm.action = SURVEY_ENDPOINT;
+      postForm.target = frameName;
+      postForm.acceptCharset = "UTF-8";
+      postForm.style.display = "none";
+
       Object.entries(data).forEach(([key, value]) => {
-        body.append(key, value ?? "");
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = value ?? "";
+        postForm.appendChild(input);
       });
 
-      await fetch(SURVEY_ENDPOINT, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-        },
-        body
-      });
+      document.body.appendChild(iframe);
+      document.body.appendChild(postForm);
+      postForm.submit();
+
+      window.setTimeout(() => {
+        postForm.remove();
+        iframe.remove();
+      }, 10000);
+
+      // O Apps Script é cross-origin; o navegador não permite ler a resposta,
+      // mas o POST já foi disparado neste ponto.
+      await new Promise(resolve => window.setTimeout(resolve, 900));
       return true;
     } catch (error) {
       console.error("Falha ao enviar dados da pesquisa:", error);
