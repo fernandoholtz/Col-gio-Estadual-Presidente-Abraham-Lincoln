@@ -13,7 +13,18 @@ function doGet() {
 
 function doPost(e) {
   try {
-    const data = JSON.parse((e.postData && e.postData.contents) || "{}");
+    let data = {};
+    const raw = (e.postData && e.postData.contents) || "";
+
+    if (raw) {
+      try {
+        data = JSON.parse(raw);
+      } catch (jsonError) {
+        data = Object.assign({}, e.parameter || {});
+      }
+    } else {
+      data = Object.assign({}, e.parameter || {});
+    }
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
     if (data.tipo === "resposta") {
