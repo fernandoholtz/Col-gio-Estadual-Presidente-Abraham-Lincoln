@@ -85,8 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const AUTO_OPEN_DELAY = 18000;
   const VISITOR_KEY = "abraham_visitor_id_v1";
   const SESSION_KEY = "abraham_session_id_v1";
-  const RESPONDED_KEY = "abraham_survey_responded_v1";
-  const DISMISSED_KEY = "abraham_survey_dismissed_v2";
+  const RESPONDED_KEY = "abraham_survey_responded_v2";
+  const DISMISSED_KEY = "abraham_survey_dismissed_v3";
 
   const uid = () => {
     if (window.crypto?.randomUUID) return window.crypto.randomUUID();
@@ -144,8 +144,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const shell = document.createElement("div");
   shell.innerHTML = `
     <aside class="survey-nudge show" data-survey-nudge aria-label="Convite para pesquisa">
-      <strong>Você conhece nossa escola?</strong>
-      <span>Conte pra gente em uma pesquisa rápida. Leva menos de 1 minuto.</span>
+      <strong>Ajude-nos com uma pesquisa rápida</strong>
+      <span>Você conhece nossa escola e o Curso Técnico em Desenvolvimento de Sistemas? Sua resposta leva menos de 1 minuto.</span>
       <div class="survey-nudge-actions">
         <button class="survey-nudge-action" type="button" data-survey-open>Responder pesquisa</button>
         <button class="survey-nudge-decline" type="button" data-survey-decline>Não quero responder</button>
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <button class="survey-fab survey-attention" type="button" data-survey-open aria-label="Abrir pesquisa e dúvidas">
       <span class="survey-fab-icon" aria-hidden="true">?</span>
-      <span>Pesquisa e dúvidas</span>
+      <span>Responder pesquisa</span>
     </button>
 
     <div class="survey-modal" data-survey-modal aria-hidden="true">
@@ -302,8 +302,8 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("survey-open");
-    nudge?.classList.remove("show");
-    fab?.classList.remove("survey-attention");
+    nudge?.classList.add("show");
+    fab?.classList.add("survey-attention");
     if (SURVEY_ENDPOINT) sendSurveyData(basePayload("pesquisa_aberta"));
   }
 
