@@ -85,8 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const AUTO_OPEN_DELAY = 18000;
   const VISITOR_KEY = "abraham_visitor_id_v1";
   const SESSION_KEY = "abraham_session_id_v1";
-  const RESPONDED_KEY = "abraham_survey_responded_v2";
-  const DISMISSED_KEY = "abraham_survey_dismissed_v3";
+  const RESPONDED_KEY = "abraham_survey_responded_v3";
+  const DISMISSED_KEY = "abraham_survey_dismissed_v4";
 
   const uid = () => {
     if (window.crypto?.randomUUID) return window.crypto.randomUUID();
