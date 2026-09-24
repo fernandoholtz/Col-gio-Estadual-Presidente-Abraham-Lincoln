@@ -82,11 +82,10 @@ document.addEventListener("DOMContentLoaded", () => {
 /* v6 — pesquisa e dúvidas */
 (() => {
   const SURVEY_ENDPOINT = "";
-  const AUTO_OPEN_DELAY = 18000;
+  const AUTO_OPEN_DELAY = 20000;
   const VISITOR_KEY = "abraham_visitor_id_v1";
   const SESSION_KEY = "abraham_session_id_v1";
-  const RESPONDED_KEY = "abraham_survey_responded_v3";
-  const DISMISSED_KEY = "abraham_survey_dismissed_v4";
+  const RESPONDED_KEY = "abraham_survey_responded_v4";
 
   const uid = () => {
     if (window.crypto?.randomUUID) return window.crypto.randomUUID();
@@ -105,10 +104,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const visitorId = getStoredId(localStorage, VISITOR_KEY);
   const sessionId = getStoredId(sessionStorage, SESSION_KEY);
   const alreadyResponded = localStorage.getItem(RESPONDED_KEY) === "1";
-  const alreadyDeclined = localStorage.getItem(DISMISSED_KEY) === "1";
   const deviceType = () => window.innerWidth <= 700 ? "celular" : (window.innerWidth <= 1024 ? "tablet" : "computador");
 
-  if (alreadyResponded || alreadyDeclined) return;
+  if (alreadyResponded) return;
 
   async function sendSurveyData(data) {
     if (!SURVEY_ENDPOINT) return false;
@@ -321,23 +319,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function declineSurvey() {
-    localStorage.setItem(DISMISSED_KEY, "1");
-    window.clearTimeout(nudgeTimer);
-    window.clearInterval(attentionInterval);
     modal?.classList.remove("open");
     modal?.setAttribute("aria-hidden", "true");
-    nudge?.classList.remove("show");
-    fab?.remove();
-    nudge?.remove();
     document.body.classList.remove("survey-open");
+
+    // A recusa é apenas temporária: a pesquisa continua disponível
+    // e volta a chamar atenção até que uma resposta seja enviada.
+    nudge?.classList.add("show");
+    fab?.classList.add("survey-attention");
+    triggerAttentionBurst();
   }
 
   openButtons.forEach(btn => btn.addEventListener("click", openSurvey));
   closeButtons.forEach(btn => btn.addEventListener("click", closeSurvey));
   declineButtons.forEach(btn => btn.addEventListener("click", declineSurvey));
 
-  // Mantém o convite visível desde o carregamento e durante toda a navegação,
-  // até a pessoa responder ou escolher explicitamente não participar.
+  // Mantém o convite visível desde o carregamento e durante toda a navegação.
+  // Ele só deixa de aparecer depois que a pessoa envia a resposta.
   nudge?.classList.add("show");
   fab?.classList.add("survey-attention");
   triggerAttentionBurst();
@@ -345,7 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Reforça visualmente o convite em intervalos regulares.
   attentionInterval = window.setInterval(() => {
     triggerAttentionBurst();
-  }, 10000);
+  }, 20000);
 
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && modal?.classList.contains("open")) closeSurvey();
