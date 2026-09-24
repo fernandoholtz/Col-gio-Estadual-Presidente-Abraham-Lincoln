@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const VISITOR_KEY = "abraham_visitor_id_v1";
   const SESSION_KEY = "abraham_session_id_v1";
   const RESPONDED_KEY = "abraham_survey_responded_v1";
-  const DISMISSED_KEY = "abraham_survey_dismissed_v1";
+  const DISMISSED_KEY = "abraham_survey_dismissed_v2";
 
   const uid = () => {
     if (window.crypto?.randomUUID) return window.crypto.randomUUID();
@@ -345,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Reforça visualmente o convite em intervalos regulares.
   attentionInterval = window.setInterval(() => {
     triggerAttentionBurst();
-  }, 12000);
+  }, 10000);
 
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && modal?.classList.contains("open")) closeSurvey();
