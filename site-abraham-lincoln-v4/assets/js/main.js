@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* v6 — pesquisa e dúvidas */
 (() => {
-  const SURVEY_ENDPOINT = "";
+  const SURVEY_ENDPOINT = "https://script.google.com/macros/s/AKfycbzvNPWnkFb6pGHFaUrWbvKUe-q6RHm0tyTQwLs4F4rJQgY2EMWvNXUJYD7_greIzM0fwQ/exec";
   const AUTO_OPEN_DELAY = 20000;
   const VISITOR_KEY = "abraham_visitor_id_v1";
   const SESSION_KEY = "abraham_session_id_v1";
